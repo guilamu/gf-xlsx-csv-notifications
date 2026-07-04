@@ -1,0 +1,50 @@
+# French translation for Gravity Forms - XLSX to CSV Notifications.
+# Copyright (C) 2026 Guilamu
+# This file is distributed under the AGPL-3.0.
+msgid ""
+msgstr ""
+"Project-Id-Version: Gravity Forms - XLSX to CSV Notifications 1.0.0\n"
+"Report-Msgid-Bugs-To: https://github.com/guilamu/gf-xlsx-csv-notifications/issues\n"
+"POT-Creation-Date: 2026-07-04 12:00+0000\n"
+"PO-Revision-Date: 2026-07-04 08:13+0200\n"
+"Last-Translator: Guilamu\n"
+"Language-Team: French\n"
+"Language: fr_FR\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=n > 1;\n"
+"X-Domain: gf-xlsx-csv-notifications\n"
+"X-Generator: Poedit 3.9\n"
+
+#: gf-xlsx-csv-notifications.php
+msgid "More information about Gravity Forms - XLSX to CSV Notifications"
+msgstr "Plus d'informations sur Gravity Forms - XLSX to CSV Notifications"
+
+#: gf-xlsx-csv-notifications.php
+msgid "Gravity Forms - XLSX to CSV Notifications"
+msgstr "Gravity Forms - XLSX to CSV Notifications"
+
+#: gf-xlsx-csv-notifications.php
+msgid "View details"
+msgstr "Voir les détails"
+
+#: gf-xlsx-csv-notifications.php
+msgid "🐛 Report a Bug"
+msgstr "🐛 Signaler un bug"
+
+#: gf-xlsx-csv-notifications.php
+msgid "🐛 Report a Bug (install Bug Reporter)"
+msgstr "🐛 Signaler un bug (installer Bug Reporter)"
+
+#: includes/class-github-updater.php
+msgid "Requires Gravity Forms:"
+msgstr "Nécessite Gravity Forms :"
+
+#: includes/class-github-updater.php
+msgid "%s or higher"
+msgstr "%s ou supérieur"
+
+#: includes/class-github-updater.php
+msgid "Unable to rename the update folder. Please retry or update manually."
+msgstr "Impossible de renommer le dossier de mise à jour. Veuillez réessayer ou mettre à jour manuellement."

@@ -1,0 +1,46 @@
+# Copyright (C) 2026 Guilamu
+# This file is distributed under the AGPL-3.0.
+msgid ""
+msgstr ""
+"Project-Id-Version: Gravity Forms - XLSX to CSV Notifications 1.0.0\n"
+"Report-Msgid-Bugs-To: https://github.com/guilamu/gf-xlsx-csv-notifications/issues\n"
+"POT-Creation-Date: 2026-07-04 12:00+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Domain: gf-xlsx-csv-notifications\n"
+
+#: gf-xlsx-csv-notifications.php
+msgid "More information about Gravity Forms - XLSX to CSV Notifications"
+msgstr ""
+
+#: gf-xlsx-csv-notifications.php
+msgid "Gravity Forms - XLSX to CSV Notifications"
+msgstr ""
+
+#: gf-xlsx-csv-notifications.php
+msgid "View details"
+msgstr ""
+
+#: gf-xlsx-csv-notifications.php
+msgid "🐛 Report a Bug"
+msgstr ""
+
+#: gf-xlsx-csv-notifications.php
+msgid "🐛 Report a Bug (install Bug Reporter)"
+msgstr ""
+
+#: includes/class-github-updater.php
+msgid "Requires Gravity Forms:"
+msgstr ""
+
+#: includes/class-github-updater.php
+msgid "%s or higher"
+msgstr ""
+
+#: includes/class-github-updater.php
+msgid "Unable to rename the update folder. Please retry or update manually."
+msgstr ""
