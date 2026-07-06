@@ -3,7 +3,7 @@
  * Plugin Name: Gravity Forms - XLSX to CSV Notifications
  * Plugin URI: https://github.com/guilamu/gf-xlsx-csv-notifications
  * Description: Converts XLSX files uploaded through Gravity Forms file upload fields (including GP File Upload Pro) to CSV and attaches the CSV (plus the original XLSX) to form notifications. Each upload field is configurable per form (attach CSV only, delimiter, worksheet) from the form settings.
- * Version: 1.1.0
+ * Version: 1.1.1
  * Author: Guilamu
  * Author URI: https://github.com/guilamu
  * Text Domain: gf-xlsx-csv-notifications
@@ -20,7 +20,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Plugin constants.
-define( 'GF_XLSX_CSV_VERSION', '1.1.0' );
+define( 'GF_XLSX_CSV_VERSION', '1.1.1' );
 define( 'GF_XLSX_CSV_PATH', plugin_dir_path( __FILE__ ) );
 define( 'GF_XLSX_CSV_URL', plugin_dir_url( __FILE__ ) );
 define( 'GF_XLSX_CSV_BASENAME', plugin_basename( __FILE__ ) );

@@ -114,6 +114,9 @@ Enable Gravity Forms logging (**Forms → Settings → Logging**): the plugin lo
 
 ## Changelog
 
+### 1.1.1 - 2026-07-06
+- The **Converted worksheet** field now rejects 0 and negative values (1 = first sheet): the number input enforces a minimum of 1 client-side, snapping back to 1 if cleared or set below 1
+
 ### 1.1.0 - 2026-07-06
 - Added a per-form **XLSX to CSV** settings tab that detects every file upload field and exposes, per field: CSV only (drop XLSX), CSV delimiter, and converted worksheet (1 = first sheet)
 - Replaced the `gf_xlsx_csv_notifications_attach_original`, `gf_xlsx_csv_notifications_delimiter` and `gf_xlsx_csv_notifications_sheet_index` filters with these UI settings

@@ -59,17 +59,16 @@ class GF_Xlsx_Csv_AddOn extends GFAddOn {
 	 */
 	public function init_admin() {
 		parent::init_admin();
-		add_action( 'admin_head', array( $this, 'print_form_settings_styles' ) );
+		add_action( 'admin_head', array( $this, 'print_form_settings_assets' ) );
 	}
 
 	/**
-	 * Print the CSS that renders each field section as three equal columns.
-	 *
-	 * Scoped to this add-on's form settings tab so it never leaks elsewhere.
+	 * Print the CSS (three equal columns) and JS (enforce a 1-based worksheet)
+	 * for this add-on's form settings tab. Scoped so nothing leaks elsewhere.
 	 *
 	 * @return void
 	 */
-	public function print_form_settings_styles() {
+	public function print_form_settings_assets() {
 
 		if ( 'gf_edit_forms' !== rgget( 'page' ) || 'settings' !== rgget( 'view' ) || $this->_slug !== rgget( 'subview' ) ) {
 			return;
@@ -92,6 +91,20 @@ class GF_Xlsx_Csv_AddOn extends GFAddOn {
 				width: 100%;
 			}
 		</style>
+		<script>
+			document.addEventListener( 'DOMContentLoaded', function () {
+				document.querySelectorAll( '.gf-xlsx-csv-row input[type="number"]' ).forEach( function ( input ) {
+					// Worksheet numbering is 1-based (1 = first sheet); never allow 0 or below.
+					input.min  = '1';
+					input.step = '1';
+					input.addEventListener( 'change', function () {
+						if ( '' === input.value || Number( input.value ) < 1 ) {
+							input.value = '1';
+						}
+					} );
+				} );
+			} );
+		</script>
 		<?php
 	}
 
