@@ -3,7 +3,7 @@
  * Plugin Name: Gravity Forms - XLSX to CSV Notifications
  * Plugin URI: https://github.com/guilamu/gf-xlsx-csv-notifications
  * Description: Converts XLSX files uploaded through Gravity Forms file upload fields (including GP File Upload Pro) to CSV and attaches the CSV (plus the original XLSX) to form notifications. Each upload field is configurable per form (attach CSV only, delimiter, worksheet) from the form settings.
- * Version: 1.1.1
+ * Version: 1.1.3
  * Author: Guilamu
  * Author URI: https://github.com/guilamu
  * Text Domain: gf-xlsx-csv-notifications
@@ -20,7 +20,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Plugin constants.
-define( 'GF_XLSX_CSV_VERSION', '1.1.1' );
+define( 'GF_XLSX_CSV_VERSION', '1.1.3' );
 define( 'GF_XLSX_CSV_PATH', plugin_dir_path( __FILE__ ) );
 define( 'GF_XLSX_CSV_URL', plugin_dir_url( __FILE__ ) );
 define( 'GF_XLSX_CSV_BASENAME', plugin_basename( __FILE__ ) );
@@ -124,6 +124,10 @@ class GF_Xlsx_Csv_Notifications {
 	 */
 	public static function init() {
 		add_filter( 'gform_notification', array( __CLASS__, 'add_attachments' ), 10, 3 );
+		// Runs after GF has assembled every attachment (including files added by the
+		// notification's own "Attach uploaded files" option), so it can drop the XLSX
+		// for fields set to "CSV only" and remove duplicate attachments.
+		add_filter( 'gform_pre_send_email', array( __CLASS__, 'enforce_csv_only' ), 10, 4 );
 	}
 
 	/**
@@ -186,6 +190,65 @@ class GF_Xlsx_Csv_Notifications {
 		$notification['attachments'] = array_values( array_unique( $notification['attachments'] ) );
 
 		return $notification;
+	}
+
+	/**
+	 * Final attachment gate, run right before the notification email is sent.
+	 *
+	 * Gravity Forms' own "Attach uploaded files to notification" option adds the
+	 * uploaded XLSX *after* the gform_notification filter, so it cannot be removed
+	 * there. This runs at send time and, for every field configured as
+	 * "CSV only (drop XLSX)", strips that field's XLSX from the outgoing email.
+	 * It also removes any duplicate attachments (e.g. an XLSX attached both by
+	 * this plugin and by GF's option).
+	 *
+	 * @param array  $email          Email data: to, subject, message, headers, attachments, abort_email.
+	 * @param string $message_format Message format ("html"/"text").
+	 * @param array  $notification   The notification being sent.
+	 * @param array  $entry          The entry (submission).
+	 *
+	 * @return array
+	 */
+	public static function enforce_csv_only( $email, $message_format, $notification, $entry ) {
+
+		if ( ! is_array( $email ) || empty( $email['attachments'] ) || ! is_array( $email['attachments'] ) ) {
+			return $email;
+		}
+
+		if ( ! is_array( $entry ) || ! class_exists( 'GFAPI' ) ) {
+			return $email;
+		}
+
+		$form = GFAPI::get_form( rgar( $entry, 'form_id' ) );
+		if ( ! is_array( $form ) ) {
+			return $email;
+		}
+
+		$settings = self::get_form_settings( $form );
+
+		// Normalised absolute paths of XLSX files whose field is set to "CSV only".
+		$drop = array();
+		foreach ( self::get_entry_xlsx_paths( $form, $entry ) as $file ) {
+			if ( self::field_setting_enabled( $settings, 'attach_csv_only_' . $file['field_id'] ) ) {
+				$drop[ wp_normalize_path( $file['path'] ) ] = true;
+			}
+		}
+
+		// Drop "CSV only" XLSX files and de-duplicate the remaining attachments.
+		$kept = array();
+		$seen = array();
+		foreach ( $email['attachments'] as $attachment ) {
+			$normalized = wp_normalize_path( (string) $attachment );
+			if ( isset( $drop[ $normalized ] ) || isset( $seen[ $normalized ] ) ) {
+				continue;
+			}
+			$seen[ $normalized ] = true;
+			$kept[]              = $attachment;
+		}
+
+		$email['attachments'] = $kept;
+
+		return $email;
 	}
 
 	/**
@@ -402,6 +465,20 @@ class GF_Xlsx_Csv_Notifications {
 		if ( $sheet_index > 0 && ! $xlsx->worksheet( $sheet_index ) ) {
 			$sheet_index = 0; // Fall back to the first sheet.
 		}
+
+		/**
+		 * Format used to render Excel date/time cells in the CSV.
+		 *
+		 * SimpleXLSX otherwise emits every date cell as "Y-m-d H:i:s"
+		 * (e.g. "1979-09-17 00:00:00"), ignoring how Excel displays it.
+		 * Default to the French short-date order without the time part;
+		 * use e.g. 'd/m/Y H:i:s' if a column genuinely carries a time.
+		 *
+		 * @param string $format    PHP date() format string.
+		 * @param string $xlsx_path Source XLSX path.
+		 */
+		$date_format = apply_filters( 'gf_xlsx_csv_notifications_date_format', 'd/m/Y', $xlsx_path );
+		$xlsx->setDateTimeFormat( $date_format );
 
 		$fh = @fopen( $csv_path, 'wb' );
 		if ( ! $fh ) {

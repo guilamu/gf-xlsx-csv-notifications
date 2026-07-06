@@ -83,6 +83,16 @@ add_filter( 'gf_xlsx_csv_notifications_field_enabled', function( $enabled, $fiel
 }, 10, 2 );
 ```
 
+### Can I change how dates are formatted in the CSV?
+
+Yes, use the `gf_xlsx_csv_notifications_date_format` filter. It receives a [PHP `date()` format string](https://www.php.net/manual/en/datetime.format.php) (default `d/m/Y`) and the source XLSX path:
+
+```php
+add_filter( 'gf_xlsx_csv_notifications_date_format', function( $format, $xlsx_path ) {
+    return 'd/m/Y H:i:s'; // keep the time, e.g. for a genuine timestamp column
+}, 10, 2 );
+```
+
 ### Where can I see what was converted or why a file was skipped?
 
 Enable Gravity Forms logging (**Forms → Settings → Logging**): the plugin logs every attachment and every conversion error there.
@@ -113,6 +123,12 @@ Enable Gravity Forms logging (**Forms → Settings → Logging**): the plugin lo
 ```
 
 ## Changelog
+
+### 1.1.3 - 2026-07-06
+- Fixed: fields set to **CSV only (drop XLSX)** could still end up with the XLSX attached, because Gravity Forms' own "Attach uploaded files to notification" option runs after this plugin's filter and re-added it. A new `gform_pre_send_email` hook now runs last, dropping the XLSX for "CSV only" fields and de-duplicating attachments right before the email is sent
+
+### 1.1.2 - 2026-07-06
+- Fixed: date cells were converted using a fixed `Y-m-d H:i:s` format (e.g. `1979-09-17 00:00:00`) instead of matching how Excel displays the date. Dates are now written as `d/m/Y` by default; use the new `gf_xlsx_csv_notifications_date_format` filter to change the format (e.g. keep the time for genuine timestamp columns)
 
 ### 1.1.1 - 2026-07-06
 - The **Converted worksheet** field now rejects 0 and negative values (1 = first sheet): the number input enforces a minimum of 1 client-side, snapping back to 1 if cleared or set below 1
