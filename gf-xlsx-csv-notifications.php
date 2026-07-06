@@ -2,8 +2,8 @@
 /**
  * Plugin Name: Gravity Forms - XLSX to CSV Notifications
  * Plugin URI: https://github.com/guilamu/gf-xlsx-csv-notifications
- * Description: Converts XLSX files uploaded through Gravity Forms file upload fields (including GP File Upload Pro) to CSV and attaches the CSV (plus the original XLSX) to form notifications.
- * Version: 1.0.0
+ * Description: Converts XLSX files uploaded through Gravity Forms file upload fields (including GP File Upload Pro) to CSV and attaches the CSV (plus the original XLSX) to form notifications. Each upload field is configurable per form (attach CSV only, delimiter, worksheet) from the form settings.
+ * Version: 1.1.0
  * Author: Guilamu
  * Author URI: https://github.com/guilamu
  * Text Domain: gf-xlsx-csv-notifications
@@ -20,13 +20,31 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Plugin constants.
-define( 'GF_XLSX_CSV_VERSION', '1.0.0' );
+define( 'GF_XLSX_CSV_VERSION', '1.1.0' );
 define( 'GF_XLSX_CSV_PATH', plugin_dir_path( __FILE__ ) );
 define( 'GF_XLSX_CSV_URL', plugin_dir_url( __FILE__ ) );
 define( 'GF_XLSX_CSV_BASENAME', plugin_basename( __FILE__ ) );
 
 // Include the GitHub auto-updater.
 require_once GF_XLSX_CSV_PATH . 'includes/class-github-updater.php';
+
+// Register the per-form settings add-on. Must run on gform_loaded, never on
+// plugins_loaded/init, or the Gravity Forms menu is already built and the tab
+// silently fails to appear.
+add_action( 'gform_loaded', 'gf_xlsx_csv_register_addon', 5 );
+
+/**
+ * Register the GFAddOn that renders the per-form "XLSX to CSV" settings tab.
+ *
+ * @return void
+ */
+function gf_xlsx_csv_register_addon() {
+	if ( ! method_exists( 'GFForms', 'include_addon_framework' ) ) {
+		return;
+	}
+	require_once GF_XLSX_CSV_PATH . 'includes/class-gf-xlsx-csv-addon.php';
+	GFAddOn::register( 'GF_Xlsx_Csv_AddOn' );
+}
 
 // Load translations.
 add_action( 'init', function () {
@@ -133,8 +151,8 @@ class GF_Xlsx_Csv_Notifications {
 			return $notification;
 		}
 
-		$xlsx_paths = self::get_entry_xlsx_paths( $form, $entry );
-		if ( empty( $xlsx_paths ) ) {
+		$xlsx_files = self::get_entry_xlsx_paths( $form, $entry );
+		if ( empty( $xlsx_files ) ) {
 			return $notification;
 		}
 
@@ -142,11 +160,20 @@ class GF_Xlsx_Csv_Notifications {
 			$notification['attachments'] = array();
 		}
 
-		/** Also attach the original XLSX file (true by default). */
-		$attach_original = apply_filters( 'gf_xlsx_csv_notifications_attach_original', true, $notification, $form, $entry );
+		$settings = self::get_form_settings( $form );
 
-		foreach ( $xlsx_paths as $xlsx_path ) {
-			$csv_path = self::convert_to_csv( $xlsx_path );
+		foreach ( $xlsx_files as $file ) {
+
+			$field_id  = $file['field_id'];
+			$xlsx_path = $file['path'];
+
+			$delimiter   = self::get_field_delimiter( $settings, $field_id );
+			$sheet_index = self::get_field_sheet_index( $settings, $field_id );
+
+			// When "attach the CSV only" is enabled for this field, skip the XLSX.
+			$attach_original = ! self::field_setting_enabled( $settings, 'attach_csv_only_' . $field_id );
+
+			$csv_path = self::convert_to_csv( $xlsx_path, $delimiter, $sheet_index );
 			if ( $csv_path ) {
 				$notification['attachments'][] = $csv_path;
 				self::log( sprintf( 'CSV attached to notification "%s": %s', rgar( $notification, 'name' ), $csv_path ) );
@@ -162,7 +189,35 @@ class GF_Xlsx_Csv_Notifications {
 	}
 
 	/**
-	 * Return the physical paths of the .xlsx files uploaded in the entry.
+	 * Return every file upload field contained in a form.
+	 *
+	 * Covers regular Gravity Forms file upload fields and GP File Upload Pro,
+	 * both of which report the "fileupload" input type. Used to build the
+	 * per-field settings tab and to iterate uploads at notification time.
+	 *
+	 * @param array $form The form.
+	 *
+	 * @return GF_Field[]
+	 */
+	public static function get_upload_fields( $form ) {
+
+		$fields = array();
+
+		if ( empty( $form['fields'] ) ) {
+			return $fields;
+		}
+
+		foreach ( $form['fields'] as $field ) {
+			if ( is_object( $field ) && $field->get_input_type() === 'fileupload' ) {
+				$fields[] = $field;
+			}
+		}
+
+		return $fields;
+	}
+
+	/**
+	 * Return the .xlsx files uploaded in the entry, tagged with their field ID.
 	 *
 	 * Handles single file upload fields (value = URL) and multi-file fields
 	 * (value = JSON array of URLs), which covers GP File Upload Pro.
@@ -170,21 +225,13 @@ class GF_Xlsx_Csv_Notifications {
 	 * @param array $form  The form.
 	 * @param array $entry The entry.
 	 *
-	 * @return string[]
+	 * @return array[] List of array( 'field_id' => int, 'path' => string ).
 	 */
 	public static function get_entry_xlsx_paths( $form, $entry ) {
 
-		$paths = array();
+		$files = array();
 
-		if ( empty( $form['fields'] ) ) {
-			return $paths;
-		}
-
-		foreach ( $form['fields'] as $field ) {
-
-			if ( ! is_object( $field ) || $field->get_input_type() !== 'fileupload' ) {
-				continue;
-			}
+		foreach ( self::get_upload_fields( $form ) as $field ) {
 
 			/** Allows excluding specific fields from the conversion. */
 			if ( ! apply_filters( 'gf_xlsx_csv_notifications_field_enabled', true, $field, $form ) ) {
@@ -212,12 +259,80 @@ class GF_Xlsx_Csv_Notifications {
 				}
 				$path = self::url_to_path( $url );
 				if ( $path && strtolower( pathinfo( $path, PATHINFO_EXTENSION ) ) === 'xlsx' && is_readable( $path ) ) {
-					$paths[] = $path;
+					$files[] = array(
+						'field_id' => (int) $field->id,
+						'path'     => $path,
+					);
 				}
 			}
 		}
 
-		return $paths;
+		return $files;
+	}
+
+	/**
+	 * Read this form's saved add-on settings.
+	 *
+	 * @param array $form The form.
+	 *
+	 * @return array
+	 */
+	protected static function get_form_settings( $form ) {
+		if ( class_exists( 'GF_Xlsx_Csv_AddOn' ) ) {
+			$settings = GF_Xlsx_Csv_AddOn::get_instance()->get_form_settings( $form );
+			return is_array( $settings ) ? $settings : array();
+		}
+
+		return array();
+	}
+
+	/**
+	 * Whether a checkbox-style form setting is enabled.
+	 *
+	 * @param array  $settings Saved form settings.
+	 * @param string $key      Setting key.
+	 *
+	 * @return bool
+	 */
+	protected static function field_setting_enabled( $settings, $key ) {
+		return '1' === (string) rgar( $settings, $key );
+	}
+
+	/**
+	 * Resolve the CSV delimiter configured for a field (";" by default).
+	 *
+	 * @param array $settings Saved form settings.
+	 * @param int   $field_id Upload field ID.
+	 *
+	 * @return string Single-character delimiter.
+	 */
+	protected static function get_field_delimiter( $settings, $field_id ) {
+
+		$raw = rgar( $settings, 'delimiter_' . $field_id );
+
+		if ( 'tab' === $raw ) {
+			return "\t";
+		}
+		if ( is_string( $raw ) && '' !== $raw ) {
+			return substr( $raw, 0, 1 );
+		}
+
+		return ';';
+	}
+
+	/**
+	 * Resolve the worksheet index configured for a field.
+	 *
+	 * The UI is 1-based (1 = first sheet, matching Excel); SimpleXLSX is 0-based,
+	 * so the stored value is shifted down by one. Empty/invalid falls back to 0.
+	 *
+	 * @param array $settings Saved form settings.
+	 * @param int   $field_id Upload field ID.
+	 *
+	 * @return int Zero-based worksheet index.
+	 */
+	protected static function get_field_sheet_index( $settings, $field_id ) {
+		return max( 0, (int) rgar( $settings, 'worksheet_' . $field_id ) - 1 );
 	}
 
 	/**
@@ -252,26 +367,26 @@ class GF_Xlsx_Csv_Notifications {
 	}
 
 	/**
-	 * Convert an XLSX file to CSV (semicolon delimiter, UTF-8 with BOM, first sheet).
+	 * Convert an XLSX file to CSV (UTF-8 with BOM) using per-field settings.
 	 *
 	 * The CSV is written next to the XLSX and reused when already up to date.
 	 *
-	 * @param string $xlsx_path Path to the XLSX file.
+	 * @param string $xlsx_path   Path to the XLSX file.
+	 * @param string $delimiter   Single-character CSV delimiter (";" by default).
+	 * @param int    $sheet_index Index of the worksheet to convert (0 = first).
 	 *
 	 * @return string|false Path to the generated CSV, or false on failure.
 	 */
-	public static function convert_to_csv( $xlsx_path ) {
+	public static function convert_to_csv( $xlsx_path, $delimiter = ';', $sheet_index = 0 ) {
 
 		if ( ! class_exists( '\Shuchkin\SimpleXLSX' ) ) {
 			require_once plugin_dir_path( __FILE__ ) . 'includes/SimpleXLSX.php';
 		}
 
-		/** CSV delimiter (";" by default, Excel-friendly for European locales). */
-		$delimiter = apply_filters( 'gf_xlsx_csv_notifications_delimiter', ';' );
-		/** Index of the worksheet to convert (0 = first). */
-		$sheet_index = (int) apply_filters( 'gf_xlsx_csv_notifications_sheet_index', 0 );
+		$delimiter   = ( is_string( $delimiter ) && '' !== $delimiter ) ? substr( $delimiter, 0, 1 ) : ';';
+		$sheet_index = max( 0, (int) $sheet_index );
 
-		$csv_path = self::csv_destination( $xlsx_path );
+		$csv_path = self::csv_destination( $xlsx_path, $delimiter, $sheet_index );
 
 		// Cache: CSV already generated and newer than the XLSX.
 		if ( file_exists( $csv_path ) && filemtime( $csv_path ) >= filemtime( $xlsx_path ) ) {
@@ -313,14 +428,24 @@ class GF_Xlsx_Csv_Notifications {
 	/**
 	 * Determine where to write the CSV: next to the XLSX when possible, otherwise in the temp folder.
 	 *
-	 * @param string $xlsx_path Path to the XLSX file.
+	 * With default settings (semicolon, first sheet) the CSV keeps the clean
+	 * "{name}.csv" filename. Non-default settings add a short hash suffix so a
+	 * settings change produces a distinct file instead of serving a stale cache.
+	 *
+	 * @param string $xlsx_path   Path to the XLSX file.
+	 * @param string $delimiter   CSV delimiter in effect.
+	 * @param int    $sheet_index Worksheet index in effect.
 	 *
 	 * @return string
 	 */
-	protected static function csv_destination( $xlsx_path ) {
+	protected static function csv_destination( $xlsx_path, $delimiter = ';', $sheet_index = 0 ) {
 
-		$dir  = dirname( $xlsx_path );
-		$name = pathinfo( $xlsx_path, PATHINFO_FILENAME ) . '.csv';
+		$dir    = dirname( $xlsx_path );
+		$base   = pathinfo( $xlsx_path, PATHINFO_FILENAME );
+		$suffix = ( ';' === $delimiter && 0 === (int) $sheet_index )
+			? ''
+			: '-' . substr( md5( $delimiter . '|' . $sheet_index ), 0, 8 );
+		$name   = $base . $suffix . '.csv';
 
 		if ( is_writable( $dir ) ) {
 			return trailingslashit( $dir ) . $name;

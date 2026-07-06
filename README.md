@@ -4,23 +4,34 @@
 
 Converts XLSX files uploaded through Gravity Forms into CSV and attaches both the CSV and the original XLSX to your notification emails.
 
+## Per-Form Settings
+
+Each form gets an **XLSX to CSV** tab under its settings (**Forms → your form → Settings → XLSX to CSV**). The plugin detects every file upload field in the form and exposes, per field:
+
+- **CSV only (drop XLSX)** — attach only the converted CSV, leaving the original XLSX out of the notification
+- **CSV delimiter** — semicolon, comma, tab, or pipe
+- **Converted worksheet** — which worksheet to convert (1 = first sheet)
+
+No code required — the options that used to live behind filters are now point-and-click, and configurable independently for each upload field.
+
 ## XLSX to CSV Conversion
 
-- Convert the first worksheet of every uploaded `.xlsx` file to CSV (choose another worksheet with a filter)
-- Generate Excel-friendly output: semicolon (`;`) delimiter and UTF-8 BOM so accented characters open correctly
-- Reuse cached conversions: a CSV is regenerated only when the source XLSX is newer
+- Convert the chosen worksheet of every uploaded `.xlsx` file to CSV (first sheet by default)
+- Generate Excel-friendly output: configurable delimiter (semicolon by default) and UTF-8 BOM so accented characters open correctly
+- Reuse cached conversions: a CSV is regenerated only when the source XLSX or its settings change
 - Run everything locally with the bundled SimpleXLSX library (MIT) — no external service involved
 
 ## Notification Attachments
 
 - Attach the generated CSV (and, by default, the original XLSX) to Gravity Forms notification emails
 - Match single and multi-file upload fields, including GP File Upload Pro — with no dependency on it
-- Target specific forms, notifications, or fields with 5 dedicated filters
+- Fine-tune each upload field from the form settings, or target whole forms/notifications with dedicated filters
 - Trace every conversion and error through the Gravity Forms logging system
 
 ## Key Features
 
-- **Zero Configuration:** Activate the plugin and every notification of forms with file upload fields is covered
+- **Zero Configuration:** Activate the plugin and every notification of forms with file upload fields is covered; per-field options are optional
+- **Per-Field Control:** A settings tab on each form to tune attachment, delimiter and worksheet for every upload field
 - **Multilingual:** Works with content in any language
 - **Translation-Ready:** All strings are internationalized (French translation included)
 - **Secure:** Uploaded file URLs are resolved with path-traversal protection, confined to the Gravity Forms upload directory
@@ -56,20 +67,11 @@ add_filter( 'gf_xlsx_csv_notifications_enabled', function( $enabled, $notificati
 
 ### Can I attach the CSV only, without the original XLSX?
 
-Yes, use the `gf_xlsx_csv_notifications_attach_original` filter:
-
-```php
-add_filter( 'gf_xlsx_csv_notifications_attach_original', '__return_false' );
-```
+Yes. Open **Forms → your form → Settings → XLSX to CSV** and enable **CSV only (drop XLSX)** for the relevant upload field. It is configurable per field.
 
 ### Can I change the CSV delimiter or the converted worksheet?
 
-Yes, use the `gf_xlsx_csv_notifications_delimiter` and `gf_xlsx_csv_notifications_sheet_index` filters:
-
-```php
-add_filter( 'gf_xlsx_csv_notifications_delimiter', function() { return ','; } );
-add_filter( 'gf_xlsx_csv_notifications_sheet_index', function() { return 1; } ); // 0 = first sheet
-```
+Yes, in the same **XLSX to CSV** form settings tab: pick the **CSV delimiter** (semicolon, comma, tab or pipe) and the **Converted worksheet** number (1 = first sheet) for each upload field.
 
 ### Can I exclude a specific upload field?
 
@@ -88,7 +90,7 @@ Enable Gravity Forms logging (**Forms → Settings → Logging**): the plugin lo
 ## Limitations
 
 - Only `.xlsx` files are converted; the legacy `.xls` format is not supported by SimpleXLSX
-- One worksheet per CSV: the first sheet by default, or another one via the `gf_xlsx_csv_notifications_sheet_index` filter
+- One worksheet per CSV: the first sheet by default, or another one chosen per field in the form settings
 - Conversion happens when a notification is sent, not at upload time
 
 ## Project Structure
@@ -98,8 +100,9 @@ Enable Gravity Forms logging (**Forms → Settings → Logging**): the plugin lo
 ├── gf-xlsx-csv-notifications.php          # Main plugin file
 ├── uninstall.php                          # Cleanup on uninstall
 ├── README.md
-├── LICENSE.txt
+├── LICENSE
 ├── includes
+│   ├── class-gf-xlsx-csv-addon.php        # Per-form settings tab (GFAddOn)
 │   ├── class-github-updater.php           # GitHub auto-updates
 │   ├── Parsedown.php                      # Markdown parser for the plugin details popup
 │   └── SimpleXLSX.php                     # XLSX reader (shuchkin/simplexlsx, MIT)
@@ -110,6 +113,12 @@ Enable Gravity Forms logging (**Forms → Settings → Logging**): the plugin lo
 ```
 
 ## Changelog
+
+### 1.1.0 - 2026-07-06
+- Added a per-form **XLSX to CSV** settings tab that detects every file upload field and exposes, per field: CSV only (drop XLSX), CSV delimiter, and converted worksheet (1 = first sheet)
+- Replaced the `gf_xlsx_csv_notifications_attach_original`, `gf_xlsx_csv_notifications_delimiter` and `gf_xlsx_csv_notifications_sheet_index` filters with these UI settings
+- Cache filename now accounts for delimiter/worksheet so changing a setting regenerates the CSV instead of reusing a stale one
+- Kept the `gf_xlsx_csv_notifications_enabled` and `gf_xlsx_csv_notifications_field_enabled` filters as programmatic escape hatches
 
 ### 1.0.0 - 2026-07-04
 - Initial release

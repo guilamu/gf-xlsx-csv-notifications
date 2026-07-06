@@ -2,9 +2,9 @@
 # This file is distributed under the AGPL-3.0.
 msgid ""
 msgstr ""
-"Project-Id-Version: Gravity Forms - XLSX to CSV Notifications 1.0.0\n"
+"Project-Id-Version: Gravity Forms - XLSX to CSV Notifications 1.1.0\n"
 "Report-Msgid-Bugs-To: https://github.com/guilamu/gf-xlsx-csv-notifications/issues\n"
-"POT-Creation-Date: 2026-07-04 12:00+0000\n"
+"POT-Creation-Date: 2026-07-06 12:00+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -31,6 +31,67 @@ msgstr ""
 
 #: gf-xlsx-csv-notifications.php
 msgid "🐛 Report a Bug (install Bug Reporter)"
+msgstr ""
+
+#: includes/class-gf-xlsx-csv-addon.php
+msgid "XLSX to CSV"
+msgstr ""
+
+#: includes/class-gf-xlsx-csv-addon.php
+msgid "This form has no file upload field. Add one to configure the XLSX → CSV conversion."
+msgstr ""
+
+#: includes/class-gf-xlsx-csv-addon.php
+msgid "Upload field"
+msgstr ""
+
+#. translators: 1: field label, 2: field ID.
+#: includes/class-gf-xlsx-csv-addon.php
+msgid "XLSX to CSV — %1$s (field #%2$d)"
+msgstr ""
+
+#: includes/class-gf-xlsx-csv-addon.php
+msgid "Attachment"
+msgstr ""
+
+#: includes/class-gf-xlsx-csv-addon.php
+msgid "When enabled, only the converted CSV is attached to notifications. When disabled, both the CSV and the original XLSX are attached."
+msgstr ""
+
+#: includes/class-gf-xlsx-csv-addon.php
+msgid "CSV only (drop XLSX)"
+msgstr ""
+
+#: includes/class-gf-xlsx-csv-addon.php
+msgid "CSV delimiter"
+msgstr ""
+
+#: includes/class-gf-xlsx-csv-addon.php
+msgid "Character used to separate the columns in the generated CSV."
+msgstr ""
+
+#: includes/class-gf-xlsx-csv-addon.php
+msgid "Semicolon ( ; )"
+msgstr ""
+
+#: includes/class-gf-xlsx-csv-addon.php
+msgid "Comma ( , )"
+msgstr ""
+
+#: includes/class-gf-xlsx-csv-addon.php
+msgid "Tab"
+msgstr ""
+
+#: includes/class-gf-xlsx-csv-addon.php
+msgid "Pipe ( | )"
+msgstr ""
+
+#: includes/class-gf-xlsx-csv-addon.php
+msgid "Converted worksheet"
+msgstr ""
+
+#: includes/class-gf-xlsx-csv-addon.php
+msgid "Number of the worksheet to convert (1 = first sheet). Falls back to the first sheet if the number does not exist."
 msgstr ""
 
 #: includes/class-github-updater.php

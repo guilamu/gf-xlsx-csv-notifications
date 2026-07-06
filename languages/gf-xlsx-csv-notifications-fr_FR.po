@@ -3,10 +3,10 @@
 # This file is distributed under the AGPL-3.0.
 msgid ""
 msgstr ""
-"Project-Id-Version: Gravity Forms - XLSX to CSV Notifications 1.0.0\n"
+"Project-Id-Version: Gravity Forms - XLSX to CSV Notifications 1.1.0\n"
 "Report-Msgid-Bugs-To: https://github.com/guilamu/gf-xlsx-csv-notifications/issues\n"
-"POT-Creation-Date: 2026-07-04 12:00+0000\n"
-"PO-Revision-Date: 2026-07-04 08:13+0200\n"
+"POT-Creation-Date: 2026-07-06 12:00+0000\n"
+"PO-Revision-Date: 2026-07-06 14:23+0200\n"
 "Last-Translator: Guilamu\n"
 "Language-Team: French\n"
 "Language: fr_FR\n"
@@ -15,7 +15,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
 "X-Domain: gf-xlsx-csv-notifications\n"
-"X-Generator: Poedit 3.9\n"
+"X-Generator: Poedit 3.8\n"
 
 #: gf-xlsx-csv-notifications.php
 msgid "More information about Gravity Forms - XLSX to CSV Notifications"
@@ -36,6 +36,67 @@ msgstr "🐛 Signaler un bug"
 #: gf-xlsx-csv-notifications.php
 msgid "🐛 Report a Bug (install Bug Reporter)"
 msgstr "🐛 Signaler un bug (installer Bug Reporter)"
+
+#: includes/class-gf-xlsx-csv-addon.php
+msgid "XLSX to CSV"
+msgstr "XLSX vers CSV"
+
+#: includes/class-gf-xlsx-csv-addon.php
+msgid "This form has no file upload field. Add one to configure the XLSX → CSV conversion."
+msgstr "Ce formulaire ne contient aucun champ d'envoi de fichier. Ajoutez-en un pour configurer la conversion XLSX → CSV."
+
+#: includes/class-gf-xlsx-csv-addon.php
+msgid "Upload field"
+msgstr "Champ d'envoi de fichier"
+
+#. translators: 1: field label, 2: field ID.
+#: includes/class-gf-xlsx-csv-addon.php
+msgid "XLSX to CSV — %1$s (field #%2$d)"
+msgstr "XLSX vers CSV — %1$s (champ n° %2$d)"
+
+#: includes/class-gf-xlsx-csv-addon.php
+msgid "Attachment"
+msgstr "Pièce jointe"
+
+#: includes/class-gf-xlsx-csv-addon.php
+msgid "When enabled, only the converted CSV is attached to notifications. When disabled, both the CSV and the original XLSX are attached."
+msgstr "Lorsque cette option est activée, seul le CSV converti est joint aux notifications. Sinon, le CSV et le XLSX d'origine sont tous deux joints."
+
+#: includes/class-gf-xlsx-csv-addon.php
+msgid "CSV only (drop XLSX)"
+msgstr "CSV uniquement (sans le XLSX)"
+
+#: includes/class-gf-xlsx-csv-addon.php
+msgid "CSV delimiter"
+msgstr "Délimiteur CSV"
+
+#: includes/class-gf-xlsx-csv-addon.php
+msgid "Character used to separate the columns in the generated CSV."
+msgstr "Caractère utilisé pour séparer les colonnes dans le CSV généré."
+
+#: includes/class-gf-xlsx-csv-addon.php
+msgid "Semicolon ( ; )"
+msgstr "Point-virgule ( ; )"
+
+#: includes/class-gf-xlsx-csv-addon.php
+msgid "Comma ( , )"
+msgstr "Virgule ( , )"
+
+#: includes/class-gf-xlsx-csv-addon.php
+msgid "Tab"
+msgstr "Tabulation"
+
+#: includes/class-gf-xlsx-csv-addon.php
+msgid "Pipe ( | )"
+msgstr "Barre verticale ( | )"
+
+#: includes/class-gf-xlsx-csv-addon.php
+msgid "Converted worksheet"
+msgstr "Feuille de calcul convertie"
+
+#: includes/class-gf-xlsx-csv-addon.php
+msgid "Number of the worksheet to convert (1 = first sheet). Falls back to the first sheet if the number does not exist."
+msgstr "Numéro de la feuille de calcul à convertir (1 = première feuille). Revient à la première feuille si le numéro n'existe pas."
 
 #: includes/class-github-updater.php
 msgid "Requires Gravity Forms:"
