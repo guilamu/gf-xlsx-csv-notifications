@@ -124,6 +124,9 @@ Enable Gravity Forms logging (**Forms → Settings → Logging**): the plugin lo
 
 ## Changelog
 
+### 1.1.4 - 2026-07-08
+- Fixed: the add-on title and the **XLSX to CSV** form settings tab label were hardcoded in English and never passed through the i18n functions, so they ignored the French translation. They are now translated once the textdomain is loaded
+
 ### 1.1.3 - 2026-07-06
 - Fixed: fields set to **CSV only (drop XLSX)** could still end up with the XLSX attached, because Gravity Forms' own "Attach uploaded files to notification" option runs after this plugin's filter and re-added it. A new `gform_pre_send_email` hook now runs last, dropping the XLSX for "CSV only" fields and de-duplicating attachments right before the email is sent
 

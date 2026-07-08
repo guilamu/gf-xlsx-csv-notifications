@@ -53,6 +53,22 @@ class GF_Xlsx_Csv_AddOn extends GFAddOn {
 	}
 
 	/**
+	 * Translate the add-on titles once translations are loaded.
+	 *
+	 * The class property defaults stay in English because they are set before
+	 * the textdomain is available; GF reads them when building the form
+	 * settings tab, so they are re-assigned here through the i18n functions.
+	 *
+	 * @return void
+	 */
+	public function init() {
+		$this->_title       = esc_html__( 'Gravity Forms - XLSX to CSV Notifications', 'gf-xlsx-csv-notifications' );
+		$this->_short_title = esc_html__( 'XLSX to CSV', 'gf-xlsx-csv-notifications' );
+
+		parent::init();
+	}
+
+	/**
 	 * Admin-only setup: lay the per-field settings out as three columns.
 	 *
 	 * @return void
